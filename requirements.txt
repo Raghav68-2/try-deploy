@@ -3,3 +3,4 @@ uvicorn
 torch
 opencv-python
 numpy
+mediapipe
