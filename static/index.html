@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drowsiness Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+        #container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 20px;
+        }
+        #video-container {
+            width: 640px;
+            height: 480px;
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        #fps-counter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: #00ff00;
+            font-weight: bold;
+        }
+        #stats-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding-top: 20px;
+        }
+        .stat {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Drowsiness Detection</h1>
+    <div id="container">
+        <!-- Video feed container -->
+        <div id="video-container">
+            <div id="fps-counter"></div>
+            <img id="video-feed" src="" alt="Webcam feed" width="100%" height="100%">
+        </div>
+        
+        <!-- Stats container -->
+        <div id="stats-container">
+            <div class="stat" id="ear-stat">EAR: 0.0</div>
+            <div class="stat" id="pitch-stat">Pitch: 0.0 deg</div>
+            <div class="stat" id="roll-stat">Roll: 0.0 deg</div>
+            <div class="stat" id="blinks-stat">Blinks: 0</div>
+            <div class="stat" id="yawns-stat">Yawns: 0</div>
+        </div>
+    </div>
+
+    <script>
+        const videoFeed = document.getElementById("video-feed");
+        const fpsCounter = document.getElementById("fps-counter");
+        const earStat = document.getElementById("ear-stat");
+        const pitchStat = document.getElementById("pitch-stat");
+        const rollStat = document.getElementById("roll-stat");
+        const blinksStat = document.getElementById("blinks-stat");
+        const yawnsStat = document.getElementById("yawns-stat");
+
+        const ws = new WebSocket("ws://127.0.0.1:8000/ws/video_feed");
+
+        // Listen for messages from WebSocket (video feed)
+        ws.onmessage = function (event) {
+            const frameData = event.data.split(";");
+            const frame = frameData[0]; // Video frame in base64
+            const stats = frameData[1].split(","); // Stats in comma-separated format
+
+            videoFeed.src = "data:image/jpeg;base64," + frame;
+
+            // Update stats
+            earStat.textContent = `EAR: ${stats[0]}`;
+            pitchStat.textContent = `Pitch: ${stats[1]} deg`;
+            rollStat.textContent = `Roll: ${stats[2]} deg`;
+            blinksStat.textContent = `Blinks: ${stats[3]}`;
+            yawnsStat.textContent = `Yawns: ${stats[4]}`;
+
+            // Update FPS counter
+            const frameRate = parseInt(Math.random() * 12 + 8);  // Random FPS for testing
+            fpsCounter.textContent = `FPS: ${frameRate}`;
+        };
+
+        // Handle WebSocket connection errors
+        ws.onerror = function (error) {
+            console.log("WebSocket Error: ", error);
+        };
+    </script>
+</body>
+</html>
